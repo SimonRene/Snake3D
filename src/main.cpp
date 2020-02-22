@@ -19,6 +19,8 @@
 #include "Shader.h"
 #include "Camera.h"
 
+#include "Snake/Snake.h"
+
 #define WINDOW_TITLE "LearnOpenGL"
 
 const unsigned int SCR_WIDTH = 800;
@@ -88,6 +90,45 @@ float cubeVertices[] = {
     -0.5f,  0.5f, -0.5f,  0.0f, 1.0f
 };
 
+float cubeVertices2[] = {
+    -0.5f, -0.5f, -0.5f,
+     0.5f, -0.5f, -0.5f,
+     0.5f,  0.5f, -0.5f,
+     0.5f,  0.5f, -0.5f,
+    -0.5f,  0.5f, -0.5f,
+    -0.5f, -0.5f, -0.5f,
+    -0.5f, -0.5f,  0.5f,
+     0.5f, -0.5f,  0.5f,
+     0.5f,  0.5f,  0.5f,
+     0.5f,  0.5f,  0.5f,
+    -0.5f,  0.5f,  0.5f,
+    -0.5f, -0.5f,  0.5f,
+    -0.5f,  0.5f,  0.5f,
+    -0.5f,  0.5f, -0.5f,
+    -0.5f, -0.5f, -0.5f,
+    -0.5f, -0.5f, -0.5f,
+    -0.5f, -0.5f,  0.5f,
+    -0.5f,  0.5f,  0.5f,
+     0.5f,  0.5f,  0.5f,
+     0.5f,  0.5f, -0.5f,
+     0.5f, -0.5f, -0.5f,
+     0.5f, -0.5f, -0.5f,
+     0.5f, -0.5f,  0.5f,
+     0.5f,  0.5f,  0.5f,
+    -0.5f, -0.5f, -0.5f,
+     0.5f, -0.5f, -0.5f,
+     0.5f, -0.5f,  0.5f,
+     0.5f, -0.5f,  0.5f,
+    -0.5f, -0.5f,  0.5f,
+    -0.5f, -0.5f, -0.5f,
+    -0.5f,  0.5f, -0.5f,
+     0.5f,  0.5f, -0.5f,
+     0.5f,  0.5f,  0.5f,
+     0.5f,  0.5f,  0.5f,
+    -0.5f,  0.5f,  0.5f,
+    -0.5f,  0.5f, -0.5f
+};
+
 glm::vec3 cubePositions[] = {
   glm::vec3( 0.0f,  0.0f,  0.0f), 
   glm::vec3( 2.0f,  5.0f, -15.0f), 
@@ -128,6 +169,8 @@ float lastX = 400, lastY = 300;
 bool firstMouse = true;
 
 Camera ourCam(glm::vec3(0.0f, 0.0f, 3.0f));
+
+Snake* snake;
 
 int main() {
 
@@ -198,6 +241,11 @@ int main() {
 
     // VA.addBuffer(EB);
 
+    Shader cubeShader("shader/colorShader.vs", "shader/colorShader.fs");
+
+    CubeObject cube(cubeShader ,cubeVertices2, sizeof(cubeVertices2));
+    snake = new Snake(20, cube);
+
     GLcheck();
 
 
@@ -206,6 +254,8 @@ int main() {
     // ========================================
     // ============ Render Loop ===============
     // ========================================
+
+    float passedTime = 0.0f;
 
     while(!glfwWindowShouldClose(window))
     {
@@ -231,6 +281,7 @@ int main() {
         // GLcheck();
         GLcheck();
         
+        /*
         // projection matrix
         glm::mat4 projection = glm::mat4(1.0f);
         projection = glm::perspective(glm::radians(ourCam.Zoom), (float)SCR_WIDTH/(float)SCR_HEIGHT, 0.1f, 100.0f);
@@ -249,18 +300,45 @@ int main() {
 
         float time = glfwGetTime();
 
-        for(unsigned int i = 0; i < 10; i++)
-        {
-            // model matrix
-            glm::mat4 model = glm::mat4(1.0f);
-            model = glm::translate(model, cubePositions[i]);
-            float angle = 20.0f * (i+1); 
-            model = glm::rotate(model, time * glm::radians(angle), glm::vec3(1.0f, 0.3f, 0.5f));
+        */
 
-            ourShader.setMat4("model", model);
+        // for(unsigned int i = 0; i < 10; i++)
+        // {
+        //     // model matrix
+        //     glm::mat4 model = glm::mat4(1.0f);
+        //     model = glm::translate(model, cubePositions[i]);
+        //     float angle = 20.0f * (i+1); 
+        //     model = glm::rotate(model, time * glm::radians(angle), glm::vec3(1.0f, 0.3f, 0.5f));
 
-            glDrawArrays(GL_TRIANGLES, 0, 36);
+        //     ourShader.setMat4("model", model);
+
+        //     glDrawArrays(GL_TRIANGLES, 0, 36);
+        // }
+        cubeShader.use();
+
+        glm::mat4 projection = glm::mat4(1.0f);
+        projection = glm::perspective(glm::radians(ourCam.Zoom), (float)SCR_WIDTH/(float)SCR_HEIGHT, 0.1f, 100.0f);
+        cubeShader.setMat4("projection", projection);
+
+        GLcheck();
+
+        // view matrix
+        glm::mat4 view;
+        view = ourCam.GetViewMatrix();
+        cubeShader.setMat4("view", view);
+        GLcheck();
+
+        passedTime += deltaTime;
+        float movesPerSecond = 8.0f;
+        if (passedTime >= 1.0f/movesPerSecond) {
+            passedTime -= 1.0f/movesPerSecond;
+            if(!snake->move()) {
+                glfwSetWindowShouldClose(window, true);
+            }
         }
+
+        GLcheck();
+        snake->draw();
 
         GLcheck();
 
@@ -321,6 +399,17 @@ void processInput(GLFWwindow *window)
         ourCam.ProcessKeyboard(Camera_Movement::DOWN, deltaTime);//cameraPos -= cameraUp * cameraSpeed;
     if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS)
         ourCam.ProcessKeyboard(Camera_Movement::UP, deltaTime);//cameraPos += cameraUp * cameraSpeed;
+
+
+    if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
+        snake->setDir(Direction::NORTH);
+    if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
+        snake->setDir(Direction::SOUTH);
+    if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS)
+        snake->setDir(Direction::WEST);
+    if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS)
+        snake->setDir(Direction::EAST);
+    
 
 }
 
