@@ -21,8 +21,9 @@ public:
 
     void draw(CubeObject& obj)
     {
+        //float diff = (rand()%100)/1000.0f;
         obj.setPosition(m_worldPosition);
-        obj.setColor(0.0f, 1.0f, 0.0f);
+        //obj.setColor(0.0f, 0.8f+diff, 0.0f);
         obj.draw();
     }
 
@@ -101,9 +102,9 @@ public:
                 float b = 0.9f;
                 if (x < 0 || y < 0 || x >= static_cast<int>(size) || y >= static_cast<int>(size)) {
                     yOffset = 0;
-                    r = 0.4f + (rand()%100)/1000.0f;
-                    g = 0.9f + (rand()%100)/1000.0f;
-                    b = 0.6f + (rand()%100)/1000.0f;
+                    r = 0.3f + (rand()%100)/1000.0f;
+                    g = 0.4f + (rand()%100)/1000.0f;
+                    b = 0.8f + (rand()%100)/1000.0f;
                 } else {
                     yOffset = -1;
                     r = 0.2f + (rand()%100)/1000.0f;
@@ -187,6 +188,8 @@ public:
         GLcheck();
         m_cube.setColor(0.0f, 9.0f, 0.0f);
         for (int i = 0; i < m_snakeParts.size(); ++i) {
+            float diff = 0.6f / (float)(i+1);
+            m_cube.setColor(0.0f, 0.4f+diff, 0.0f);
             m_snakeParts[i].draw(m_cube);
         }
         GLcheck();
