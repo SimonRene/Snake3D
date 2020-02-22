@@ -244,7 +244,7 @@ int main() {
     Shader cubeShader("shader/colorShader.vs", "shader/colorShader.fs");
 
     CubeObject cube(cubeShader ,cubeVertices2, sizeof(cubeVertices2));
-    snake = new Snake(20, cube);
+    snake = new Snake(60, cube);
 
     GLcheck();
 
@@ -329,7 +329,7 @@ int main() {
         GLcheck();
 
         passedTime += deltaTime;
-        float movesPerSecond = 8.0f;
+        float movesPerSecond = 40.0f;
         if (passedTime >= 1.0f/movesPerSecond) {
             passedTime -= 1.0f/movesPerSecond;
             if(!snake->move()) {

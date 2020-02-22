@@ -36,6 +36,29 @@ struct Food {
     unsigned int y;
 };
 
+class Construktion {
+public:
+    Construktion() = default;
+
+    void add(int x, int y, int z, float r, float g, float b) {
+        m_positions.push_back(glm::vec3(x, y, z));
+        m_color.push_back(glm::vec3(r, g, b));
+    }
+
+    void draw(CubeObject& cube) {
+        for (int i = 0; i<m_positions.size(); ++i) {
+            cube.setColor(m_color[i]);
+            cube.setPosition(m_positions[i]);
+            cube.draw();
+        }
+    }
+
+
+private:
+    std::vector<glm::vec3> m_positions;
+    std::vector<glm::vec3> m_color;
+};
+
 enum Direction {
     NORTH,
     EAST,
@@ -56,8 +79,6 @@ public:
             for (int y = 0; y < size; ++y) {
                 glm::vec3 pos((float)(x), 0.0f, -((float)(y)));
                 m_positions[size * y + x] = pos;
-
-                std::cout << "Pos (" << x << ", " << y << ") : (" << pos.x << ", " << pos.y << ", " << pos.z << ")" << std::endl;
             }
         }
         
@@ -70,6 +91,42 @@ public:
         SnakePart head(startX, startY, m_positions[(startY * size) + startX]);
         
         m_snakeParts.push_back(head);
+
+        for (int x = -1; x <= static_cast<int>(size); ++x) {
+            for (int y = -1; y <= static_cast<int>(size); ++y) {
+                glm::vec3 pos((float)(x), 0.0f, -((float)(y)));
+                int yOffset = 0;
+                float r = 0.2f;
+                float g = 0.7f;
+                float b = 0.9f;
+                if (x < 0 || y < 0 || x >= static_cast<int>(size) || y >= static_cast<int>(size)) {
+                    yOffset = 0;
+                    r = 0.4f + (rand()%100)/1000.0f;
+                    g = 0.9f + (rand()%100)/1000.0f;
+                    b = 0.6f + (rand()%100)/1000.0f;
+                } else {
+                    yOffset = -1;
+                    r = 0.2f + (rand()%100)/1000.0f;
+                    g = 0.7f + (rand()%100)/1000.0f;
+                    b = 0.9f + (rand()%100)/1000.0f;
+                }
+
+                m_floor.add(pos.x, pos.y+yOffset, pos.z, r, g, b);
+            }
+        }
+
+
+        // for (int x = 0; x < m_fieldSize; ++x) {
+        //     for (int y = 0; y < m_fieldSize; ++y) {
+        //         glm::vec3 pos = m_positions[y * m_fieldSize + x];
+
+        //         float r = 0.2f + (rand()%100)/1000.0f;
+        //         float g = 0.7f + (rand()%100)/1000.0f;
+        //         float b = 0.9f + (rand()%100)/1000.0f;
+
+        //         m_floor.add(pos.x, pos.y-1.0f, pos.z, r, g, b);
+        //     }
+        // }
     }
 
     void setDir(Direction newDir) {
@@ -100,10 +157,6 @@ public:
             newHeadY = m_fieldSize - 1;
         }
 
-        std::cout << "currentHeadX " << currentHeadX << " currentHeadY  " << currentHeadY << std::endl;
-        std::cout << "newHeadX " << newHeadX << " newHeadY" << newHeadY << std::endl;
-        std::cout << "getVelX() " << getVelX() << " getVelY()" << getVelX() << std::endl;
-
         bool lostGame = !checkPos(newHeadX, newHeadY);
 
         int snakeEndX = m_snakeParts[m_snakeParts.size()-1].x;
@@ -117,7 +170,6 @@ public:
 
         m_snakeParts[0].x = newHeadX;
         m_snakeParts[0].y = newHeadY;
-        //std::cout << "Moved to " << newHeadX << " - " << newHeadY << std::endl;
         if(!lostGame) {
             m_snakeParts[0].m_worldPosition = m_positions[newHeadY*m_fieldSize + newHeadX];
             if (checkFood(newHeadX, newHeadY)) {
@@ -147,18 +199,20 @@ public:
 
         
 
-        for (int i = 0; i < (m_fieldSize * m_fieldSize); ++i) {
-            glm::vec3 pos = m_positions[i];
-            // std::cout << "floor at: " << pos.x << " - " << pos.y << " - " << pos.z << std::endl;
-            m_cube.setPosition(pos.x, -1.0f, pos.z);
+        // for (int i = 0; i < (m_fieldSize * m_fieldSize); ++i) {
+        //     glm::vec3 pos = m_positions[i];
+        //     // std::cout << "floor at: " << pos.x << " - " << pos.y << " - " << pos.z << std::endl;
+        //     m_cube.setPosition(pos.x, -1.0f, pos.z);
             
-            float r = 0.0f;//(rand()%100)/100.0f;
-            float g = 0.0f;//(rand()%100)/100.0f;
-            float b = 0.8f;//(rand()%100)/100.0f;
+        //     float r = 0.0f;//(rand()%100)/100.0f;
+        //     float g = 0.0f;//(rand()%100)/100.0f;
+        //     float b = 0.8f;//(rand()%100)/100.0f;
 
-            m_cube.setColor(r, g, b);
-            m_cube.draw();
-        }
+        //     m_cube.setColor(r, g, b);
+        //     m_cube.draw();
+        // }
+
+        m_floor.draw(m_cube);
 
         GLcheck();
     }
@@ -209,7 +263,6 @@ public:
         for (int i = 1; i < m_snakeParts.size(); ++i) {
             SnakePart& part = m_snakeParts[i];
             if (part.x == x && part.y == y) {
-                std::cout << "hit tail " << i << " . " << part.y << " = " << y << " -- " << part.x << " = " << x << std::endl;
                 return false;
             } 
         }
@@ -235,5 +288,7 @@ private:
     glm::vec3 * m_positions = nullptr;
 
     CubeObject m_cube;
+
+    Construktion m_floor;
 
 };
