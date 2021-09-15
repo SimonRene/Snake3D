@@ -18,6 +18,7 @@
 
 #include "Shader.h"
 #include "Camera.h"
+#include "input.h"
 
 #include "Snake/Snake.h"
 
@@ -26,25 +27,6 @@
 const unsigned int SCR_WIDTH = 800;
 const unsigned int SCR_HEIGHT = 600;
 
-// #define WINDOW_WIDTH 800
-// #define WINDOW_HEIGHT 600
-
-float vertices[] = {
-    // position          // color           // texture
-     0.5f,  0.5f, 0.0f,  0.0f, 0.0f, 1.0f,  1.0f, 1.0f, // top right
-     0.5f, -0.5f, 0.0f,  0.0f, 0.0f, 1.0f,  1.0f, 0.0f, // bottom right
-    -0.5f, -0.5f, 0.0f,  0.0f, 1.0f, 0.0f,  0.0f, 0.0f, // bottom left
-    -0.5f,  0.5f, 0.0f,  0.0f, 1.0f, 0.0f,  0.0f, 1.0f, // top left
-};
-
-float vertices2[] = {
-    // position          // color           // texture
-     0.8f,  0.8f, 0.0f,  0.0f, 1.0f, 1.0f,  1.0f, 1.0f, // top right
-     0.8f,  0.5f, 0.0f,  1.0f, 0.0f, 1.0f,  1.0f, 0.0f, // bottom right
-     0.5f,  0.5f, 0.0f,  1.0f, 1.0f, 0.0f,  0.0f, 0.0f, // bottom left
-     0.5f,  0.8f, 0.0f,  1.0f, 1.0f, 1.0f,  0.0f, 1.0f, // top left
-        
-};
 
 float cubeVertices[] = {
     -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
@@ -129,18 +111,6 @@ float cubeVertices2[] = {
     -0.5f,  0.5f, -0.5f
 };
 
-glm::vec3 cubePositions[] = {
-  glm::vec3( 0.0f,  0.0f,  0.0f), 
-  glm::vec3( 2.0f,  5.0f, -15.0f), 
-  glm::vec3(-1.5f, -2.2f, -2.5f),  
-  glm::vec3(-3.8f, -2.0f, -12.3f),  
-  glm::vec3( 2.4f, -0.4f, -3.5f),  
-  glm::vec3(-1.7f,  3.0f, -7.5f),  
-  glm::vec3( 1.3f, -2.0f, -2.5f),  
-  glm::vec3( 1.5f,  2.0f, -2.5f), 
-  glm::vec3( 1.5f,  0.2f, -1.5f), 
-  glm::vec3(-1.3f,  1.0f, -1.5f)  
-};
 
 float deltaTime = 0.0f;	// Time between current frame and last frame
 float lastFrame = 0.0f; // Time of last frame
@@ -151,14 +121,11 @@ unsigned int indices[] = {  // note that we start from 0!
     1, 2, 3    // second triangle
 };
 
-// Test
+void closeApp();
 
 void clearScreen(float r = 0.0f, float g = 0.0f, float b = 0.0f, float a = 1.0f);
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
-void processInput(GLFWwindow *window);
-
-void mouse_callback(GLFWwindow* window, double xpos, double ypos);
-void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
+void processInput();
 
 GLFWwindow* createWindow(const char* title, int width, int height, GLFWmonitor* monitor = nullptr, GLFWwindow* share = nullptr);
 
@@ -171,10 +138,11 @@ bool firstMouse = true;
 Camera ourCam(glm::vec3(10.0f, 10.0f, 10.0f));
 
 Snake* snake;
+GLFWwindow* window;
 
 int main() {
 
-    GLFWwindow* window = createWindow(WINDOW_TITLE, SCR_WIDTH, SCR_HEIGHT);
+    window = createWindow(WINDOW_TITLE, SCR_WIDTH, SCR_HEIGHT);
     
     if (!window) {
         std::cout << "An error occured." << std::endl;
@@ -204,55 +172,38 @@ int main() {
     ourShader.setInt("texture1", 0);
     ourShader.setInt("texture2", 1);
 
-
+    GE::Input::initializeInput(window);
 
 
     // ====== VAO =========
 
     // create vertex array object
     VertexArray VA;
-    // VA.bind();
-
 
     // ====== VBO ========
 
     // gernerate vertex buffer object
     VertexBuffer VB(cubeVertices, sizeof(cubeVertices));
-    //  VB.bind();
-    //GLcheck();
 
     // link vertex attributes
     VertexBufferLayout vbl;
 
     vbl.push<float>(3);
-    //vbl.push<float>(3);
     vbl.push<float>(2);
 
     VA.addBuffer(VB, vbl);
 
     VA.unbind();
     
-    //GLcheck();
-
-    // ====== EBO =======
-
-    // create Element Buffer Object
-    // IndexBuffer EB(indices, 6);
-
-    // VA.addBuffer(EB);
 
     Shader cubeShader("shader/colorShader.vs", "shader/colorShader.fs");
 
-    CubeObject cube(cubeShader ,cubeVertices2, sizeof(cubeVertices2));
+    CubeObject cube(cubeShader, cubeVertices2, sizeof(cubeVertices2));
     snake = new Snake(20, cube);
 
-    //GLcheck();
-
-
-    //==============
 
     // ========================================
-    // ============ Render Loop ===============
+    // ============ Game Loop ===============
     // ========================================
 
     float passedTime = 0.0f;
@@ -262,8 +213,10 @@ int main() {
         float currentFrame = glfwGetTime();
         deltaTime = currentFrame - lastFrame;
         lastFrame = currentFrame;  
+
         //=== input ===
-        processInput(window);
+        GE::Input::updateInput();
+        processInput();
 
         //=== render ===
         // clear screen
@@ -278,55 +231,19 @@ int main() {
         glActiveTexture(GL_TEXTURE1);
         glBindTexture(GL_TEXTURE_2D, texture2);
 
-        // GLcheck();
-        //GLcheck();
-        
-        /*
-        // projection matrix
-        glm::mat4 projection = glm::mat4(1.0f);
-        projection = glm::perspective(glm::radians(ourCam.Zoom), (float)SCR_WIDTH/(float)SCR_HEIGHT, 0.1f, 100.0f);
-        ourShader.setMat4("projection", projection);
 
-        GLcheck();
-
-        // view matrix
-        glm::mat4 view;
-        view = ourCam.GetViewMatrix();
-        ourShader.setMat4("view", view);
-
-        GLcheck();
-
-        VA.bind(); // bind the VAO that contains the object to be drawn
-
-        float time = glfwGetTime();
-
-        */
-
-        // for(unsigned int i = 0; i < 10; i++)
-        // {
-        //     // model matrix
-        //     glm::mat4 model = glm::mat4(1.0f);
-        //     model = glm::translate(model, cubePositions[i]);
-        //     float angle = 20.0f * (i+1); 
-        //     model = glm::rotate(model, time * glm::radians(angle), glm::vec3(1.0f, 0.3f, 0.5f));
-
-        //     ourShader.setMat4("model", model);
-
-        //     glDrawArrays(GL_TRIANGLES, 0, 36);
-        // }
         cubeShader.use();
 
         glm::mat4 projection = glm::mat4(1.0f);
         projection = glm::perspective(glm::radians(ourCam.Zoom), (float)SCR_WIDTH/(float)SCR_HEIGHT, 0.1f, 100.0f);
         cubeShader.setMat4("projection", projection);
 
-        //GLcheck();
+
 
         // view matrix
         glm::mat4 view;
         view = ourCam.GetViewMatrix();
         cubeShader.setMat4("view", view);
-        //GLcheck();
 
         passedTime += deltaTime;
         float movesPerSecond = 10.0f;
@@ -337,25 +254,17 @@ int main() {
             }
         }
 
-        //GLcheck();
         snake->draw();
 
-        //GLcheck();
-
-
-        //=== glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.) ===
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
 
-    // optional: de-allocate all resources once they've outlived their purpose:
-    //glDeleteVertexArrays(1, &VAO);
 
     glDeleteShader(ourShader.ID);
     glDeleteTextures(1,&texture1);
     glDeleteTextures(1,&texture2);
 
-    // glfw: terminate, clearing all previously allocated GLFW resources.
     glfwTerminate();
   
     return 0;
@@ -374,40 +283,44 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
     glViewport(0, 0, width, height);
 }
 
-// process all input: query GLFW whether relevant keys are pressed/released this frame and react accordingly
-void processInput(GLFWwindow *window)
+// process all input using the Input class
+void processInput()
 {
-    if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS)
-        glfwSetWindowShouldClose(window, true);
+    if (GE::Input::Q.down())
+        closeApp();
 
-    if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS)
+    if (GE::Input::E.down())
         glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
     else
         glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
 
     const float cameraSpeed = 2.8f * deltaTime; // adjust accordingly
-    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+    if (GE::Input::W.down())
         ourCam.ProcessKeyboard(Camera_Movement::FORWARD, deltaTime);//cameraPos += cameraSpeed * cameraFront;
-    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+    if (GE::Input::S.down())
         ourCam.ProcessKeyboard(Camera_Movement::BACKWARD, deltaTime);//cameraPos -= cameraSpeed * cameraFront;
-    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+    if (GE::Input::A.down())
         ourCam.ProcessKeyboard(Camera_Movement::LEFT, deltaTime);//cameraPos -= glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
-    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+    if (GE::Input::D.down())
         ourCam.ProcessKeyboard(Camera_Movement::RIGHT, deltaTime);//cameraPos += glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
-    if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
+    if (GE::Input::SHIFT_L.down())
         ourCam.ProcessKeyboard(Camera_Movement::DOWN, deltaTime);//cameraPos -= cameraUp * cameraSpeed;
-    if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS)
+    if (GE::Input::SPACE.down())
         ourCam.ProcessKeyboard(Camera_Movement::UP, deltaTime);//cameraPos += cameraUp * cameraSpeed;
 
+    if (GE::Input::MOUSE.moving()) {
+        ourCam.ProcessMouseMovement(GE::Input::MOUSE.movementX(), -GE::Input::MOUSE.movementY(), true);
+    }
 
-    if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
+
+    if (GE::Input::UP.justPressed())
         snake->setDir(Direction::NORTH);
-    if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
+    if (GE::Input::DOWN.justPressed())
         snake->setDir(Direction::SOUTH);
-    if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS)
+    if (GE::Input::LEFT.justPressed())
         snake->setDir(Direction::WEST);
-    if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS)
+    if (GE::Input::RIGHT.justPressed())
         snake->setDir(Direction::EAST);
     
 
@@ -433,8 +346,6 @@ GLFWwindow* createWindow(const char* title, int width, int height, GLFWmonitor* 
     }
     glfwMakeContextCurrent(window);
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
-    glfwSetCursorPosCallback(window, mouse_callback);  
-    glfwSetScrollCallback(window, scroll_callback); 
 
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);  
     
@@ -479,24 +390,6 @@ unsigned int createTexture(std::string filePath, unsigned int format, unsigned i
     return texture;
 }
 
-void mouse_callback(GLFWwindow* window, double xpos, double ypos)
-{
-    if(firstMouse) // initially set to true
-    {
-        lastX = xpos;
-        lastY = ypos;
-        firstMouse = false;
-    }
-
-    float xoffset = xpos - lastX;
-    float yoffset = lastY - ypos; // reversed since y-coordinates range from bottom to top
-    lastX = xpos;
-    lastY = ypos;
-
-    ourCam.ProcessMouseMovement(xoffset, yoffset, true);
-}
-
-void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
-{
-    ourCam.ProcessMouseScroll(yoffset);
+void closeApp() {
+    glfwSetWindowShouldClose(window, true);
 }

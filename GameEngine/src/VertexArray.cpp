@@ -9,7 +9,6 @@ void myPrint(std::string p)
 
 VertexArray::VertexArray() {
     glGenVertexArrays(1, &m_rendererID);
-    //ASSERT(m_rendererID);
 }
 
 

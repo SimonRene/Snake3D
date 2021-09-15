@@ -1,7 +1,6 @@
 #pragma once
 
 #include <vector>
-//#include <math.h>
 
 #include <glm/glm.hpp>
 
@@ -21,9 +20,7 @@ public:
 
     void draw(CubeObject& obj)
     {
-        //float diff = (rand()%100)/1000.0f;
         obj.setPosition(m_worldPosition);
-        //obj.setColor(0.0f, 0.8f+diff, 0.0f);
         obj.draw();
     }
 
@@ -116,18 +113,6 @@ public:
             }
         }
 
-
-        // for (int x = 0; x < m_fieldSize; ++x) {
-        //     for (int y = 0; y < m_fieldSize; ++y) {
-        //         glm::vec3 pos = m_positions[y * m_fieldSize + x];
-
-        //         float r = 0.2f + (rand()%100)/1000.0f;
-        //         float g = 0.7f + (rand()%100)/1000.0f;
-        //         float b = 0.9f + (rand()%100)/1000.0f;
-
-        //         m_floor.add(pos.x, pos.y-1.0f, pos.z, r, g, b);
-        //     }
-        // }
     }
 
     void setDir(Direction newDir) {
@@ -202,22 +187,8 @@ public:
 
         
 
-        // for (int i = 0; i < (m_fieldSize * m_fieldSize); ++i) {
-        //     glm::vec3 pos = m_positions[i];
-        //     // std::cout << "floor at: " << pos.x << " - " << pos.y << " - " << pos.z << std::endl;
-        //     m_cube.setPosition(pos.x, -1.0f, pos.z);
-            
-        //     float r = 0.0f;//(rand()%100)/100.0f;
-        //     float g = 0.0f;//(rand()%100)/100.0f;
-        //     float b = 0.8f;//(rand()%100)/100.0f;
-
-        //     m_cube.setColor(r, g, b);
-        //     m_cube.draw();
-        // }
-
         m_floor.draw(m_cube);
 
-        //GLcheck();
     }
 
     int getVelX() {
