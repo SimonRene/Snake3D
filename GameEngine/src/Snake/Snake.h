@@ -5,7 +5,7 @@
 
 #include <glm/glm.hpp>
 
-#include "CubeObject.h"
+#include "../CubeObject.h"
 
 class SnakePart {
 
@@ -185,14 +185,14 @@ public:
 
     void draw()
     {
-        GLcheck();
+        //GLcheck();
         m_cube.setColor(0.0f, 9.0f, 0.0f);
         for (int i = 0; i < m_snakeParts.size(); ++i) {
             float diff = 0.6f / (float)(i+1);
             m_cube.setColor(0.0f, 0.4f+diff, 0.0f);
             m_snakeParts[i].draw(m_cube);
         }
-        GLcheck();
+        //GLcheck();
 
         m_cube.setColor(1.0f, 0.0f, 0.0f);
 
@@ -217,7 +217,7 @@ public:
 
         m_floor.draw(m_cube);
 
-        GLcheck();
+        //GLcheck();
     }
 
     int getVelX() {

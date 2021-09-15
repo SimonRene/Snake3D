@@ -9,7 +9,7 @@ void myPrint(std::string p)
 
 VertexArray::VertexArray() {
     glGenVertexArrays(1, &m_rendererID);
-    ASSERT(m_rendererID);
+    //ASSERT(m_rendererID);
 }
 
 
@@ -34,7 +34,7 @@ void VertexArray::addBuffer(const VertexBuffer& vb, const VertexBufferLayout& la
         unsigned int size = VertexBufferElement::GetSizeOfType(element.type);
         glVertexAttribPointer(i, element.count, element.type, element.normalized, layout.getStride(), reinterpret_cast<const void*>(offset));
         glEnableVertexAttribArray(i);
-        GLcheck();
+        //GLcheck();
 
         offset += size * element.count;
     }

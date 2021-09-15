@@ -59,11 +59,11 @@ public:
 
     void draw()
     {
-        GLcheck();
+        //GLcheck();
         m_shader->use();
 
         
-        GLcheck();
+        //GLcheck();
 
 
         glm::mat4 model = glm::mat4(1.0f);
@@ -74,14 +74,14 @@ public:
 
 
 
-        GLcheck();
+        //GLcheck();
         m_shader->setVec3("ourColor", m_color.r, m_color.g, m_color.b);
-        GLcheck();
+        //GLcheck();
         m_VA.bind();
-        GLcheck();
+        //GLcheck();
 
         glDrawArrays(GL_TRIANGLES, 0, 36);
-        GLcheck();
+        //GLcheck();
     }
 
 private:

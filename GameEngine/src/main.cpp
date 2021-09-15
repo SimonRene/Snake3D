@@ -8,7 +8,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
-#include "stb_image.h"
+#include "../image_loader/stb_image.h"
 
 #include "ErrorHandler.h"
 
@@ -168,7 +168,7 @@ float lastX = 400, lastY = 300;
 
 bool firstMouse = true;
 
-Camera ourCam(glm::vec3(0.0f, 0.0f, 3.0f));
+Camera ourCam(glm::vec3(10.0f, 10.0f, 10.0f));
 
 Snake* snake;
 
@@ -219,7 +219,7 @@ int main() {
     // gernerate vertex buffer object
     VertexBuffer VB(cubeVertices, sizeof(cubeVertices));
     //  VB.bind();
-    GLcheck();
+    //GLcheck();
 
     // link vertex attributes
     VertexBufferLayout vbl;
@@ -232,7 +232,7 @@ int main() {
 
     VA.unbind();
     
-    GLcheck();
+    //GLcheck();
 
     // ====== EBO =======
 
@@ -246,7 +246,7 @@ int main() {
     CubeObject cube(cubeShader ,cubeVertices2, sizeof(cubeVertices2));
     snake = new Snake(20, cube);
 
-    GLcheck();
+    //GLcheck();
 
 
     //==============
@@ -279,7 +279,7 @@ int main() {
         glBindTexture(GL_TEXTURE_2D, texture2);
 
         // GLcheck();
-        GLcheck();
+        //GLcheck();
         
         /*
         // projection matrix
@@ -320,13 +320,13 @@ int main() {
         projection = glm::perspective(glm::radians(ourCam.Zoom), (float)SCR_WIDTH/(float)SCR_HEIGHT, 0.1f, 100.0f);
         cubeShader.setMat4("projection", projection);
 
-        GLcheck();
+        //GLcheck();
 
         // view matrix
         glm::mat4 view;
         view = ourCam.GetViewMatrix();
         cubeShader.setMat4("view", view);
-        GLcheck();
+        //GLcheck();
 
         passedTime += deltaTime;
         float movesPerSecond = 10.0f;
@@ -337,10 +337,10 @@ int main() {
             }
         }
 
-        GLcheck();
+        //GLcheck();
         snake->draw();
 
-        GLcheck();
+        //GLcheck();
 
 
         //=== glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.) ===

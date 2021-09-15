@@ -23,3 +23,4 @@ void VertexBufferLayout::push<unsigned char>(unsigned int count)
    m_elements.push_back({GL_UNSIGNED_BYTE, count, GL_FALSE});
    m_stride += count * VertexBufferElement::GetSizeOfType(GL_UNSIGNED_BYTE);
 }
+
